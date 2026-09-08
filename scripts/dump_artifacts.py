@@ -199,10 +199,22 @@ def manifest_of(tensors: dict[str, Tensor]) -> dict[str, Any]:
     }
 
 
+def _public_version(version: str | None) -> str | None:
+    """Drop the PEP 440 local segment — everything after `+`.
+
+    Pre-release Neuron wheels carry an internal build id and source commit in the
+    local segment (`X.Y.Z.<build>+<commit>.dev`). That identifies a specific
+    unreleased build, it is not something to bake into a redistributable
+    artifact, and it tells a reader nothing they can act on. The release version
+    is kept.
+    """
+    return version.split("+", 1)[0] if version else version
+
+
 def provenance() -> dict[str, Any]:
     record: dict[str, Any] = {
         "python": platform.python_version(),
-        "torch": torch.__version__,
+        "torch": _public_version(torch.__version__),
         "platform": platform.platform(),
         "torch_num_threads": torch.get_num_threads(),
     }
@@ -210,7 +222,7 @@ def provenance() -> dict[str, Any]:
     for module_name, key in (("torch_neuronx", "torch_neuronx"), ("neuronxcc", "neuronx_cc"),
                              ("nki", "nki"), ("numpy", "numpy")):
         try:
-            record[key] = __import__(module_name).__version__
+            record[key] = _public_version(__import__(module_name).__version__)
         except Exception:
             record[key] = None
 

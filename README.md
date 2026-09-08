@@ -17,6 +17,35 @@ Two things ship here:
 Everything needed is here **except the Evo 2 weights**, which are Arc's and are
 downloaded from HuggingFace at first use.
 
+> ### Read this before using it for science
+>
+> **This is a re-implementation, not Arc Institute's code.** The model definition
+> here was written against [`ArcInstitute/evo2`](https://github.com/ArcInstitute/evo2)
+> and [`Zymrael/vortex`](https://github.com/Zymrael/vortex) and patched to run
+> without CUDA, vortex, TransformerEngine, flash-attn or Triton. The weights are
+> Arc's, unmodified. Everything around them is not. It is not endorsed by, or
+> affiliated with, Arc Institute or AWS.
+>
+> **Only `evo2-7b` is validated.** `evo2-1b` builds and runs, but Arc's 1B config
+> sets `use_fp8_input_projections: True` and this port has no FP8 path — disabling
+> it costs ~47 accuracy points, so the 1B numbers cannot be gated against anything
+> and should not be trusted. `evo2-40b` is not implemented.
+>
+> **It is not bit-exact against CUDA, and it is not meant to be.** The read-out
+> differs from the H200 reference by **1.5e-02 (CPU)** and **3.5e-02 (Trainium)**
+> in bf16 — real, measured, and consistent with reduction-order differences rather
+> than a defect. For calibration: flipping `requires_grad` on the backbone, which
+> cannot change the mathematics, moves the same tensor by 1.2e-02. See
+> [`docs/PARITY.md`](docs/PARITY.md) for the method and the controls.
+>
+> That is small for a representation and it is **not nothing for a downstream
+> decision**. Variant effect sizes, likelihood ratios and ranked predictions can
+> move. If a result matters, validate it against the CUDA path for your own task
+> before relying on it.
+>
+> **Not validated here:** generation and decoding (KV cache and Hyena recurrence),
+> context beyond 8192, batch > 1 per core, and full fine-tuning at 7B scale.
+
 ---
 
 ## Status
@@ -39,13 +68,18 @@ Measured step times and scaling: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 ## Install
 
-Assumes the AWS native-PyTorch beta is already installed — that is where `torch`,
+Assumes the AWS native-PyTorch device is already installed — that is where
 `torch-neuronx`, `neuronx-cc` and `nki` come from, and this package deliberately
-does not pin them. Full recipe and version table in
+does not pin them. At the time of writing that stack is a pre-release AWS
+offering: **contact the AWS Neuron team for access and installation
+instructions.** Versions and constraints in
 [`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
 
+Nothing below the device line needs it — `make test` and `make smoke` pass on a
+plain CPU install, and the CUDA parity gate runs without a device.
+
 ```bash
-conda activate torch-neuron          # the beta env
+conda activate torch-neuron          # the environment you were given
 pip install -r requirements.txt      # numpy, huggingface_hub, pytest, ruff
 export PYTHONPATH=$PWD/src
 ```

@@ -15,7 +15,7 @@
   },
   "provenance": {
     "python": "3.11.11",
-    "torch": "2.5.1+cu124",
+    "torch": "2.5.1",
     "numpy": "1.26.4",
     "evo2": "0.1.0",
     "vortex": "0.0.2",

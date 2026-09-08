@@ -5,14 +5,27 @@ repo; the command that regenerates it is in the section. Two calibration figures
 are marked *(port campaign)* — they come from the campaign that minted the CUDA
 reference, on the same hardware, and are cited as controls rather than re-run.
 
-**Environment:** `trn2.48xlarge`, AWS native-PyTorch beta — torch 2.12.1+cpu,
-torch-neuronx 2.12.3.0.1636, neuronx-cc 2.27.2878.0, nki 0.6.0.
+**Environment:** `trn2.48xlarge`, AWS native-PyTorch device — torch 2.12.1,
+torch-neuronx 2.12.3, neuronx-cc 2.27, nki 0.6.0.
 **Model:** evo2-7b, blocks 0..10 of 32, read-out `blocks.10.mlp.l3`, 33 LoRA
 adapters at r=8, batch 1. **Reference:** an NVIDIA H200 running evo2 0.1.0 /
 vortex 0.0.2 / TransformerEngine 1.13.0, bit-reproducible across two physical
 GPUs.
 
 ---
+
+## What "PASS" means here, and what it does not
+
+This is a **re-implementation** of Evo 2, gated against the original — not the
+original. Passing means no block diverges under the stated rule, not that the
+port is bit-exact: the read-out differs from the CUDA reference by 1.5e-02 on CPU
+and 3.5e-02 on Trainium in bf16. The sections below argue that the residual is
+arithmetic rather than structural, and give the controls that support it.
+
+Whether that residual is acceptable is a property of **your** downstream task,
+not of this table. A 1.5e-02 shift in a representation can be irrelevant to a
+coarse classifier and decisive for a ranked variant-effect score. Only `evo2-7b`
+is gated at all; `evo2-1b` cannot be, for the FP8 reason below.
 
 ## Verdict
 

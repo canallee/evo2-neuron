@@ -1,27 +1,48 @@
 # Environment
 
-This repo targets the **AWS native-PyTorch beta**: a real PrivateUse1 device,
+This repo targets AWS's **native-PyTorch** path: a real PrivateUse1 device,
 `torch.device("neuron")`, with `torch.compile(backend="neuron")`. It is **not**
 the `torch_xla` path — `PJRT_DEVICE`, `xm.xla_device()` and `--device xla` do not
 apply and will not work.
 
+## Getting the stack
+
+At the time of writing the native-PyTorch device is a **pre-release AWS
+offering**, and this repo does not document how to obtain or install it — that is
+AWS's to distribute, on their terms.
+
+**Contact the AWS Neuron team for access and the current installation
+instructions.** Public entry points: the [Neuron
+documentation](https://awsdocs-neuron.readthedocs-hosted.com/) and the
+[aws-neuron GitHub organisation](https://github.com/aws-neuron).
+
+Nothing else here depends on that: the port, the heads, the objectives, the LoRA
+implementation and the whole comparison harness are plain PyTorch and run on CPU.
+`make test` and `make smoke` pass with no Neuron install at all, and
+`parity/01_inference_parity.py --devices cpu` gates the port against the saved
+CUDA reference without a device.
+
 ## Versions this was built and measured against
 
-| package | version | source |
+| package | version | notes |
 |---|---|---|
-| python | 3.12.13 | conda |
-| torch | 2.12.1+cpu | PyPI CPU wheel |
-| torch-neuronx | 2.12.3.0.1636+5c472775.dev | beta, editable install |
-| neuronx-cc | 2.27.2878.0+8220f7ac | beta wheel — **import name is `neuronxcc`** |
-| nki | 0.6.0 | beta wheel; **bundles `nkilib`**, no separate source tree needed |
-| numpy | 2.5.1 | PyPI |
+| python | 3.12 | |
+| torch | 2.12.1 | CPU build |
+| torch-neuronx | 2.12.3 | provides the `neuron` device and `backend="neuron"` |
+| neuronx-cc | 2.27 | **import name is `neuronxcc`**, not `neuronx_cc` |
+| nki | 0.6.0 | **bundles `nkilib`** — no separate kernel source tree needed |
+| numpy | 2.5 | |
+
+Build identifiers are omitted deliberately; ask the Neuron team which build to
+use. Later versions are likely fine — the constraints this code works around are
+listed at the bottom of this file, and any of them may have been fixed since.
 
 Instance: `trn2.48xlarge` — 16 Trainium2 devices, `logical-neuroncore-config: 2`,
 so **64 logical NeuronCores at 24 GiB each**, split across 2 NUMA nodes.
 
 `pip install -r requirements.txt` installs only `numpy` and `huggingface_hub`.
 torch and the Neuron stack are deliberately **not** pinned in `pyproject.toml`:
-installing them from PyPI would shadow the editable beta install.
+installing them from PyPI would shadow whatever install you were given.
 
 ## Three things that fail without naming their cause
 
@@ -98,7 +119,10 @@ the first collective with `No backend type associated with device type neuron`.
 * **Do not pipe a long device run through `tail`.** It buffers until the process
   exits, so a healthy multi-minute compile looks hung. Use `python -u`.
 
-## Beta constraints that shape this code
+## Runtime constraints that shape this code
+
+These were true of the build this was developed against. Re-check them against
+yours before assuming a workaround is still needed.
 
 | constraint | consequence here |
 |---|---|

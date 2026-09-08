@@ -4,7 +4,7 @@ Read in this order if you are new to the repo.
 
 | | |
 |---|---|
-| [`ENVIRONMENT.md`](ENVIRONMENT.md) | the AWS native-PyTorch beta, versions, and the three things that fail without naming their cause |
+| [`ENVIRONMENT.md`](ENVIRONMENT.md) | getting the native-PyTorch device, versions, and the things that fail without naming their cause |
 | [`PARITY.md`](PARITY.md) | does the port reproduce the original? Measured, with the method and the calibration behind each gate |
 | [`OPTIMIZATIONS.md`](OPTIMIZATIONS.md) | what is implemented to make Evo 2 7B + LoRA run, and what each lever is worth |
 | [`PERFORMANCE.md`](PERFORMANCE.md) | measured step times and scaling across NeuronCores |
