@@ -1,0 +1,16 @@
+__pycache__/
+*.py[cod]
+.pytest_cache/
+.ruff_cache/
+*.egg-info/
+runs/
+logs/
+.neuron_cache/
+
+# Artifact bundles: 3.5 GB of tensors, one file 2.95 GB — past GitHub's limits.
+# The manifests and checksums ARE committed, so every bundle stays fully
+# described and verifiable; see docs/ARTIFACTS.md for how to obtain the tensors.
+artifacts/**/*.pt
+!artifacts/**/manifest.json
+!artifacts/**/SHA256SUMS.json
+!artifacts/MANIFEST.json

@@ -1,0 +1,30 @@
+{
+  "g1.pt": {
+    "sha256": "f90194559770bdb75ed29d685e274dae52eec63b623950fe6c3c6f42b533eb9c",
+    "bytes": 20692149
+  },
+  "hidden0.pt": {
+    "sha256": "61960530ccc8f88e27246814e01b5635abb8c6bfaed9575bb1721c3b22ca5bd1",
+    "bytes": 3278377
+  },
+  "inputs.pt": {
+    "sha256": "315d3539dbf5daa8bf09d1819bc4202e47b5f8fec50dd4fcd2155c330b9dd3dc",
+    "bytes": 18913
+  },
+  "losses.json": {
+    "sha256": "86f24bebaf86fc696adc4ebcf337fb6141dac28416d53663bc16b8286aba5ef5",
+    "bytes": 68
+  },
+  "manifest.json": {
+    "sha256": "19b4105dd6f8d3cf33e6fa5c18e60cabc96c392f9c2352f8aa4a4f41ce0b3734",
+    "bytes": 11802
+  },
+  "w0.pt": {
+    "sha256": "99fc7d10cb4d106c66a65ecffb0db7be799303125e73ed4afb85da29c08967f7",
+    "bytes": 20692149
+  },
+  "wN.pt": {
+    "sha256": "955fed28ce8fb1f4038badc9b9e4e198f1fd0dba795862391b02475e86fb5714",
+    "bytes": 20692149
+  }
+}

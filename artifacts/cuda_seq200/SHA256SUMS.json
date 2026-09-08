@@ -1,0 +1,18 @@
+{
+  "blocks0_10.pt": {
+    "sha256": "6c8ab1859abe2bdc2002fae8d6d562b9125c8f777431de17687341ac6094e3c4",
+    "bytes": 72096546
+  },
+  "hidden0.pt": {
+    "sha256": "2979995763087f122770a2ceaddae723b41a19fd8d8882c9140439f255b9157f",
+    "bytes": 3277980
+  },
+  "inputs.pt": {
+    "sha256": "fba677fb476aafe657e7aa6eb7ae71e39c77ea4158dc87a772550c634af143ac",
+    "bytes": 17402
+  },
+  "manifest.json": {
+    "sha256": "2b3114599a6a473013396c8d6ca0c4e4560b1719abe4942f30586d804d01cb68",
+    "bytes": 1384
+  }
+}

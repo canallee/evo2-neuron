@@ -1,0 +1,37 @@
+[build-system]
+requires = ["setuptools>=68"]
+build-backend = "setuptools.build_meta"
+
+[project]
+name = "evo2-neuron"
+version = "0.1.0"
+description = "Evo 2 (StripedHyena 2) and generic LoRA fine-tuning on AWS Trainium, in native PyTorch"
+readme = "README.md"
+requires-python = ">=3.10"
+license = { text = "Apache-2.0" }
+
+# torch, torch-neuronx, neuronx-cc and nki come from the AWS native-PyTorch beta
+# and are DELIBERATELY not pinned here — installing them from PyPI would shadow
+# the editable beta install. See docs/ENVIRONMENT.md.
+dependencies = [
+    "numpy>=1.26",
+    "huggingface_hub>=0.23",
+]
+
+[project.optional-dependencies]
+dev = ["pytest>=8", "ruff>=0.6"]
+
+[tool.setuptools.packages.find]
+where = ["src"]
+
+[tool.pytest.ini_options]
+testpaths = ["tests"]
+markers = ["slow: needs the real checkpoint or a Neuron device (run with --runslow)"]
+
+[tool.ruff]
+line-length = 100
+src = ["src", "scripts", "parity", "examples", "tests"]
+
+[tool.ruff.lint]
+select = ["E", "F", "W", "I", "UP", "B", "C4", "SIM"]
+ignore = ["E501", "B008"]

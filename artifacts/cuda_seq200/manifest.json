@@ -1,0 +1,71 @@
+{
+  "config": {
+    "backbone": "evo2-7b",
+    "device": "cuda",
+    "dtype": "fp32",
+    "readout": "blocks.10.mlp.l3",
+    "hidden_size": 4096,
+    "batch_size": 1,
+    "seed": 42,
+    "strict_determinism": true,
+    "forward_only": true,
+    "seq_len": 200,
+    "blocks_built": 11,
+    "readout_block": 10
+  },
+  "provenance": {
+    "python": "3.11.11",
+    "torch": "2.5.1+cu124",
+    "numpy": "1.26.4",
+    "evo2": "0.1.0",
+    "vortex": "0.0.2",
+    "transformer_engine": "1.13.0",
+    "transformers": "4.49.0",
+    "cublas_workspace_config": ":4096:8",
+    "omp_num_threads": null,
+    "torch_num_threads": 1,
+    "cuda": "12.4",
+    "cudnn": 90100,
+    "gpu": "NVIDIA H200",
+    "gpu_capability": "9.0"
+  },
+  "hidden0": {
+    "shape": [
+      1,
+      200,
+      4096
+    ],
+    "norm": 15.395389
+  },
+  "stream": [
+    "block_out.0",
+    "block_out.1",
+    "block_out.10",
+    "block_out.2",
+    "block_out.3",
+    "block_out.4",
+    "block_out.5",
+    "block_out.6",
+    "block_out.7",
+    "block_out.8",
+    "block_out.9",
+    "mlp_l3.0",
+    "mlp_l3.1",
+    "mlp_l3.10",
+    "mlp_l3.2",
+    "mlp_l3.3",
+    "mlp_l3.4",
+    "mlp_l3.5",
+    "mlp_l3.6",
+    "mlp_l3.7",
+    "mlp_l3.8",
+    "mlp_l3.9"
+  ],
+  "note": "NVIDIA H200, evo2-7b blocks 0..10, seq 200, first forward",
+  "contents": [
+    "blocks0_10.pt",
+    "hidden0.pt",
+    "inputs.pt",
+    "manifest.json"
+  ]
+}

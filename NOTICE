@@ -1,0 +1,19 @@
+evo2-neuron
+Copyright 2026
+
+This product includes software developed by third parties:
+
+Evo 2 / StripedHyena 2 model definition and architecture configuration
+  ArcInstitute/evo2      — https://github.com/ArcInstitute/evo2      (Apache-2.0)
+  Zymrael/vortex         — https://github.com/Zymrael/vortex         (Apache-2.0)
+  Re-implemented in plain PyTorch under src/evo2_neuron/. See
+  src/evo2_neuron/VENDORED.md for source commits and the full patch list.
+
+Model weights are NOT distributed here. They are Arc Institute's, downloaded at
+first use from https://huggingface.co/arcinstitute/evo2_7b_base and governed by
+that repository's own licence.
+
+LoRA adapter design follows Arc/Zymrael Savanna (Apache-2.0) and
+Hu et al., "LoRA: Low-Rank Adaptation of Large Language Models" (ICLR 2022).
+
+The NKI linear-scan kernel is AWS's, from the `nki` package.

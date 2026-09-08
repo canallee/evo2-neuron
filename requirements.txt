@@ -1,0 +1,11 @@
+# Runtime dependencies for evo2-neuron.
+#
+# torch, torch-neuronx, neuronx-cc and nki are NOT listed. They come from the AWS
+# native-PyTorch beta and installing them from PyPI would shadow the editable
+# beta install. See docs/ENVIRONMENT.md for the versions this was built against.
+numpy>=1.26
+huggingface_hub>=0.23
+
+# dev
+pytest>=8
+ruff>=0.6

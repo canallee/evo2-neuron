@@ -1,0 +1,594 @@
+{
+  "config": {
+    "backbone": "evo2-7b",
+    "objective": "window-regression",
+    "head": null,
+    "device": "neuron",
+    "dtype": "bf16",
+    "seq_len": 200,
+    "steps": 0,
+    "forward_only": true,
+    "batch_size": 1,
+    "readout_block": 10,
+    "readout": "blocks.10.mlp.l3",
+    "blocks_built": 11,
+    "hidden_size": 4096,
+    "lora_rank": 8,
+    "lora_alpha": 8.0,
+    "lora_dropout": 0.0,
+    "lr": 0.0003,
+    "weight_decay": 0.0,
+    "seed": 42,
+    "hcl_kernel": null,
+    "compile_blocks": false,
+    "gradient_checkpointing": false,
+    "strict_determinism": true,
+    "random_backbone": false,
+    "native_trainable_dtypes": {
+      "torch.bfloat16": 74
+    }
+  },
+  "provenance": {
+    "python": "3.12.13",
+    "torch": "2.12.1+cpu",
+    "platform": "Linux-6.17.0-1019-aws-x86_64-with-glibc2.39",
+    "torch_num_threads": 96,
+    "torch_neuronx": "2.12.3.0.1636+5c472775.dev",
+    "neuronx_cc": "2.27.2878.0+8220f7ac",
+    "nki": "0.6.0+30289107548.gd2d9cc57",
+    "numpy": "2.5.1"
+  },
+  "w0": {
+    "num_tensors": 74,
+    "num_params": 5168386,
+    "tensors": {
+      "backbone.module.blocks.0.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.0.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.0.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.0.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.0.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.0.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.1.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.1.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.1.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.1.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.1.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.1.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.10.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.10.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.10.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.10.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.10.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.10.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.2.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.2.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.2.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.2.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.2.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.2.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.3.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.3.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.3.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.3.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.3.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.3.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.4.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.4.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.4.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.4.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.4.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.4.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.5.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.5.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.5.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.5.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.5.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.5.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.6.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.6.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.6.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.6.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.6.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.6.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.7.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.7.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.7.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.7.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.7.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.7.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.8.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.8.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.8.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.8.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.8.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.8.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.9.mlp.l1.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.9.mlp.l1.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.9.mlp.l2.lora_A": {
+        "shape": [
+          8,
+          4096
+        ],
+        "numel": 32768
+      },
+      "backbone.module.blocks.9.mlp.l2.lora_B": {
+        "shape": [
+          11008,
+          8
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.9.mlp.l3.lora_A": {
+        "shape": [
+          8,
+          11008
+        ],
+        "numel": 88064
+      },
+      "backbone.module.blocks.9.mlp.l3.lora_B": {
+        "shape": [
+          4096,
+          8
+        ],
+        "numel": 32768
+      },
+      "head.mlp.1.bias": {
+        "shape": [
+          256
+        ],
+        "numel": 256
+      },
+      "head.mlp.1.weight": {
+        "shape": [
+          256,
+          256
+        ],
+        "numel": 65536
+      },
+      "head.mlp.3.bias": {
+        "shape": [
+          256
+        ],
+        "numel": 256
+      },
+      "head.mlp.3.weight": {
+        "shape": [
+          256,
+          256
+        ],
+        "numel": 65536
+      },
+      "head.output_layer.bias": {
+        "shape": [
+          2
+        ],
+        "numel": 2
+      },
+      "head.output_layer.weight": {
+        "shape": [
+          2,
+          256
+        ],
+        "numel": 512
+      },
+      "head.project.bias": {
+        "shape": [
+          256
+        ],
+        "numel": 256
+      },
+      "head.project.weight": {
+        "shape": [
+          256,
+          4096
+        ],
+        "numel": 1048576
+      }
+    }
+  },
+  "hidden0": {
+    "shape": [
+      1,
+      200,
+      4096
+    ],
+    "norm": 15.362005860362755
+  },
+  "stream": [
+    "block_out.0",
+    "block_out.1",
+    "block_out.10",
+    "block_out.2",
+    "block_out.3",
+    "block_out.4",
+    "block_out.5",
+    "block_out.6",
+    "block_out.7",
+    "block_out.8",
+    "block_out.9",
+    "mlp_l3.0",
+    "mlp_l3.1",
+    "mlp_l3.10",
+    "mlp_l3.2",
+    "mlp_l3.3",
+    "mlp_l3.4",
+    "mlp_l3.5",
+    "mlp_l3.6",
+    "mlp_l3.7",
+    "mlp_l3.8",
+    "mlp_l3.9"
+  ],
+  "wall_clock_s": 26.73
+}
