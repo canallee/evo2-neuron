@@ -68,18 +68,18 @@ Measured step times and scaling: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 ## Install
 
-Assumes the AWS native-PyTorch device is already installed — that is where
-`torch-neuronx`, `neuronx-cc` and `nki` come from, and this package deliberately
-does not pin them. At the time of writing that stack is a pre-release AWS
-offering: **contact the AWS Neuron team for access and installation
-instructions.** Versions and constraints in
-[`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md).
+The `neuron` device comes from AWS's native-PyTorch stack, which is not a
+`pip install` — you assemble a conda environment from artifacts AWS gives you.
+**[`docs/INSTALL.md`](docs/INSTALL.md) is the assembly recipe**, including the
+four steps that fail without naming their cause. It does not cover obtaining the
+artifacts: at the time of writing that stack is a pre-release AWS offering, so
+**contact the AWS Neuron team for access.**
 
-Nothing below the device line needs it — `make test` and `make smoke` pass on a
-plain CPU install, and the CUDA parity gate runs without a device.
+Nothing below the device line needs any of it — `make test` and `make smoke` pass
+on a plain CPU install, and the CUDA parity gate runs without a device.
 
 ```bash
-conda activate torch-neuron          # the environment you were given
+conda activate torch-neuron-evo2     # built per docs/INSTALL.md
 pip install -r requirements.txt      # numpy, huggingface_hub, pytest, ruff
 export PYTHONPATH=$PWD/src
 ```

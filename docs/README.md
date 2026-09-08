@@ -4,7 +4,8 @@ Read in this order if you are new to the repo.
 
 | | |
 |---|---|
-| [`ENVIRONMENT.md`](ENVIRONMENT.md) | getting the native-PyTorch device, versions, and the things that fail without naming their cause |
+| [`INSTALL.md`](INSTALL.md) | building the `torch-neuron` conda environment, and the four steps that fail silently |
+| [`ENVIRONMENT.md`](ENVIRONMENT.md) | versions, cores, cache directories, and the runtime constraints that shape this code |
 | [`PARITY.md`](PARITY.md) | does the port reproduce the original? Measured, with the method and the calibration behind each gate |
 | [`OPTIMIZATIONS.md`](OPTIMIZATIONS.md) | what is implemented to make Evo 2 7B + LoRA run, and what each lever is worth |
 | [`PERFORMANCE.md`](PERFORMANCE.md) | measured step times and scaling across NeuronCores |

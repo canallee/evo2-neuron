@@ -16,6 +16,10 @@ instructions.** Public entry points: the [Neuron
 documentation](https://awsdocs-neuron.readthedocs-hosted.com/) and the
 [aws-neuron GitHub organisation](https://github.com/aws-neuron).
 
+Once you have the artifacts, [`INSTALL.md`](INSTALL.md) is the recipe for turning
+them into a working conda environment — it is not out of the box, and four of its
+steps fail in ways that point at the wrong thing.
+
 Nothing else here depends on that: the port, the heads, the objectives, the LoRA
 implementation and the whole comparison harness are plain PyTorch and run on CPU.
 `make test` and `make smoke` pass with no Neuron install at all, and
