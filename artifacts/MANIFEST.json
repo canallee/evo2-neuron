@@ -2,41 +2,41 @@
   "bundles": {
     "cpu_seq200_fwd": {
       "files": 6,
-      "bytes": 96098279
+      "bytes": 96098227
     },
     "cpu_seq200_pernt": {
       "files": 7,
-      "bytes": 65389469
+      "bytes": 65389418
     },
     "cpu_seq200_window": {
       "files": 7,
-      "bytes": 65385607
+      "bytes": 65385557
     },
     "cpu_seq8192_fwd": {
       "files": 4,
-      "bytes": 134825924
+      "bytes": 134825873
     },
     "cuda_seq200": {
       "files": 4,
-      "bytes": 75393312
+      "bytes": 75393306
     },
     "cuda_seq8192": {
       "files": 4,
-      "bytes": 3087610252
+      "bytes": 3087610246
     },
     "neuron_seq200_fwd": {
       "files": 6,
-      "bytes": 96098281
+      "bytes": 96098231
     },
     "neuron_seq200_pernt": {
       "files": 7,
-      "bytes": 65394837
+      "bytes": 65394785
     },
     "neuron_seq200_window": {
       "files": 7,
-      "bytes": 65385612
+      "bytes": 65385559
     }
   },
-  "total_bytes": 3751581573,
+  "total_bytes": 3751581202,
   "note": "Per-file checksums are in each bundle's SHA256SUMS.json. See docs/ARTIFACTS.md for the schema and docs/PARITY.md for what each bundle proves."
 }

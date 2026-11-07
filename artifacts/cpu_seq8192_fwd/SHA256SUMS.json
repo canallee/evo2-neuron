@@ -1,6 +1,6 @@
 {
   "hidden0.pt": {
-    "sha256": "8744e8b61662fa61ac7ce2e03921a01d2149b877021aed210f3aa9cadca72bb0",
+    "sha256": "ea2a9d1ef2f7f30c2852dd44094ac090a4537e48d2cca8fec9928d4b6e05c956",
     "bytes": 134219305
   },
   "inputs.pt": {
@@ -8,11 +8,11 @@
     "bytes": 594785
   },
   "losses.json": {
-    "sha256": "158066de5555ba52a201bc3e80d3b1ce9cb0aca1b0e603a49775b0a208f4c624",
+    "sha256": "d63a3b55645c5e815a20affbf961a3c5fad68545e1e0c5bea89d952431d878e2",
     "bytes": 24
   },
   "manifest.json": {
-    "sha256": "13613f1400bbc53ff58ba6860b67f7e912b647f3fc3719d1f3e65ace55b428eb",
-    "bytes": 11762
+    "sha256": "bd4eb8dc9d0ea248d9d3ca922510bb2ad0411626dab3e6f930cb0bbf5963e9c5",
+    "bytes": 11759
   }
 }

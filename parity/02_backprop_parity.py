@@ -5,8 +5,9 @@
 The gate is **magnitude-aware**, not bare cosine. `lora_B` is zero-initialised, so
 its gradient is genuinely tiny and a per-tensor relative error manufactures
 alarming ratios out of floating-point noise — on this model the `lora_B` grads
-show rel_err up to 2e-2 while the head, which carries real magnitude, sits at
-3e-6. A tensor counts as a REAL disagreement only if it fails BOTH:
+show rel_err ten times the head's (2.8e-4 against 2.9e-5, window-regression, fp32),
+though the head is the tensor that carries real magnitude. A tensor counts as a
+REAL disagreement only if it fails BOTH:
 
     cosine < 0.99   AND   max_abs / (max |grad| anywhere in the model) > 1e-3
 

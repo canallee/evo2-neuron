@@ -186,9 +186,19 @@ class TestAgainstTheRealCheckpoint:
         with torch.no_grad():
             hidden = model.backbone(ids).float()
 
+        import json
+
+        bundle_torch = json.loads((bundle / "manifest.json").read_text())["provenance"]["torch"]
+        running_torch = torch.__version__.split("+")[0]
+
         assert torch.equal(hidden, reference), (
-            "the shipped CPU bundle is bit-reproducible; a mismatch here means the "
-            "port changed"
+            f"the shipped CPU bundle was written by torch {bundle_torch}; running "
+            f"torch {running_torch}. "
+            + ("Same release, so a mismatch means the port changed."
+               if bundle_torch == running_torch else
+               "CPU results are bit-reproducible only within one torch release "
+               "(2.12.1 -> 2.14.0 moves this tensor by 1.24e-02): regenerate the CPU "
+               "bundles, see docs/PARITY.md 'CPU results across torch releases'.")
         )
 
     def test_hook_and_return_readout_are_bit_identical(self):

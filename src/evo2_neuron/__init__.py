@@ -9,8 +9,8 @@ flash-attn, no Triton, no CUDA. The same package runs unchanged on `cpu` and on
 CAVEAT. This is a port, not Arc's code, and it is not endorsed by Arc Institute.
 Only `evo2-7b` is validated: `evo2-1b`'s config enables FP8 input projections,
 which this port has no path for, so its numbers cannot be gated. The port is NOT
-bit-exact against CUDA — the read-out differs from an H200 reference by 1.5e-02
-(CPU) and 3.5e-02 (Trainium) in bf16. That is consistent with reduction order
+bit-exact against CUDA — the read-out differs from an H200 reference by 1.6e-02
+(CPU) and 3.4e-02 (Trainium) in bf16. That is consistent with reduction order
 rather than a defect, and it is still large enough to move a downstream score.
 Validate against the CUDA path before relying on a result. See docs/PARITY.md.
 

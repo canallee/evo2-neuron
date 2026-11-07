@@ -4,13 +4,14 @@ Everything here is in the shipped code. Each entry names the flag that turns it 
 and the number it is worth. Rejected candidates are not documented; if it is not
 here, the code does not do it.
 
-**Provenance.** Numbers marked *(measured here)* were produced by this repo and
-are reproducible with the commands in [`PERFORMANCE.md`](PERFORMANCE.md).
-Everything else was measured during the port campaign that produced the CUDA
-reference, on the same instance type and the same configuration, and is carried
-over rather than re-run. Where the two overlap they agree: that campaign measured
-3.825 s/step at seq 8192 and this repo measures **3.4418 s** on the same
-configuration with a smaller read-out head.
+**Provenance.** Numbers marked *(measured here)* were produced by this repo on
+torch-neuronx 2.14 (Neuron SDK 2.33.0) and are reproducible with the commands in
+[`PERFORMANCE.md`](PERFORMANCE.md). Everything else was measured during the port
+campaign that produced the CUDA reference, on the same instance type and the same
+configuration but on AWS's earlier private-beta build of the native-PyTorch
+backend, and is carried over rather than re-run. Where the two overlap they agree:
+that campaign measured 3.825 s/step at seq 8192 and this repo measures **3.4140 s**
+on the same configuration with a smaller read-out head (3.4418 s on the beta).
 
 **Production configuration:**
 
@@ -35,7 +36,7 @@ Per-rank step at seq 8192, bf16, per-block compiled, checkpointing on, `nki-scan
 | forward | 1.137 s | 29.7% | carried over |
 | **backward** | **2.671 s** | **69.8%** | carried over |
 | `optimizer.step` | 0.017 s | 0.44% | carried over |
-| **step, one core** | **3.4418 s** | 100% | **measured here** |
+| **step, one core** | **3.4140 s** | 100% | **measured here** |
 
 The phase split is from the port campaign; the step total is this repo's own
 median over warm steps. The split is what the shares are for — treat them as the
@@ -161,10 +162,10 @@ difference between 832 GB and 285 GB of host reads.
 
 ## 5. Op rewrites — the model graph runs entirely on device
 
-**Always on**, in `evo2_finetune/ops.py`. Each is an algebraic identity validated
-against the naive form on CPU in `tests/test_ops.py`, and each is used on **every**
-device — a rewrite active only on device is a rewrite whose CPU validation proves
-nothing.
+**Always on**, in `evo2_finetune/ops.py` and `evo2_neuron/layers.py`. Each is an
+algebraic identity validated against the naive form on CPU in `tests/test_ops.py`,
+and each is used on **every** device — a rewrite active only on device is a
+rewrite whose CPU validation proves nothing.
 
 | op | rewrite | failure without it |
 |---|---|---|
@@ -172,16 +173,18 @@ nothing.
 | `aten::logaddexp.out` | max-shift identity | **silent** host fallback |
 | `Conv1d` spanning its whole input | one `addmm` | **hard** compile error, `NCC_ITIN902` |
 | `aten::pow.Scalar` in RoPE `inv_freq` | recompute in fp32 (fixed in source) | silent host fallback, bf16 only |
+| `Tensor.norm` backward in `RMSNorm` | same forward, PyTorch's backward formula with a float zero (`layers._L2Norm`), bit-identical gradient | silent `aten::_to_copy` host fallback per norm per backward, both dtypes — new in torch-neuronx 2.14 |
 
-**One known exception, and it is not the model.** `torch.nn.utils.clip_grad_norm_`
-costs exactly one `aten::_to_copy` per step — a scalar round-trip. Every
-formulation was tried: `foreach=True`, `foreach=False`, the default, and a
-hand-written clip with the threshold pre-placed on device. All four are
-numerically identical (worst gradient difference 0.0, norms agreeing to 8
-decimals) and all four produce it. It is reported by
-`scripts/check_fallback_ops.py` as its own stage and excluded from the gate,
-because the gate is about the model graph. Run with `--clip-grad-norm 0` if you
-want a step with nothing on the host at all.
+The first four were found on the private-beta build this port was developed on;
+the last on torch-neuronx 2.14. The rewrites are kept regardless of whether a
+given release still needs them: they are validated, cost nothing, and
+`scripts/check_fallback_ops.py` passes with every stage clean.
+
+**No exceptions on torch-neuronx 2.14.** On the private-beta build,
+`torch.nn.utils.clip_grad_norm_` cost one scalar `aten::_to_copy` per step whatever
+the formulation, and the gate waived it. On 2.14 the clip runs on the device, so
+`scripts/check_fallback_ops.py` now gates every stage — forward, backward, clip,
+`optimizer.step` and eval — with no waiver.
 
 Note the two failure modes. The argmax and logaddexp fallbacks are numerically
 *correct* — the run completes with the right answer and a host round-trip per
@@ -190,7 +193,7 @@ step — which is exactly why this needs a tool rather than an eyeball. Use
 backward / `optimizer.step` / eval (a cumulative list localises nothing), asserts
 the executed-op list is **non-empty** (an empty fallback list is also what a stage
 that ran nothing returns), and runs both dtypes (the fallback set is
-dtype-dependent: bf16's forward executes 53 distinct ops against fp32's 50).
+dtype-dependent: on torch-neuronx 2.14, bf16's forward executes 48 distinct ops against fp32's 50).
 
 The `log1p` trap is worth stating: rewriting `logaddexp` in terms of `log1p`
 merely moves the fallback to `aten::log1p.out`. `log(1 + x)` is used instead.
@@ -204,12 +207,12 @@ Measured here at 8192, bf16, batch 1 per rank — full table and method in
 
 | ranks | tokens/s | speedup | efficiency |
 |---:|---:|---:|---:|
-| 1 | 2,380 | 1.00x | 100% |
-| 4 | 9,107 | 3.83x | 95.7% |
-| 16 | 36,131 | 15.18x | 94.9% |
-| **64** | **147,292** | **61.88x** | **96.7%** |
+| 1 | 2,400 | 1.00x | 100% |
+| 4 | 9,278 | 3.87x | 96.7% |
+| 16 | 36,934 | 15.39x | 96.2% |
+| **64** | **147,067** | **61.29x** | **95.8%** |
 
-The step time moves 3.4% from 1 rank to 64 (3.4418 s → 3.5595 s) for a 64x wider
+The step time moves 4.4% from 1 rank to 64 (3.4140 s → 3.5650 s) for a 64x wider
 batch, and rank spread stays under 0.5%.
 
 Five mechanics, all handled in `scripts/train_lora_ddp.py`, and each one fails

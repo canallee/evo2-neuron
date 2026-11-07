@@ -19,6 +19,9 @@ evo2-7b, blocks 0..10 of 32, read-out `blocks.10.mlp.l3`. Trainable: **74 tensor
 **Instance** — `trn2.48xlarge`: 16 Trainium2 devices, `logical-neuroncore-config: 2`,
 64 logical NeuronCores at 24 GiB each, 2 NUMA nodes.
 
+**Stack** — torch 2.14.0, torch-neuronx 2.14.3 (Neuron SDK 2.33.0, built from the
+public source), neuronx-cc 2.28, nki 0.7.0, Neuron runtime 2.35.
+
 ## Reporting rules
 
 Two, and both change the number you would otherwise quote:
@@ -40,46 +43,52 @@ mid-run throughput collapse.
 
 | ranks | cold compile | warm step (median rank) | slowest rank | rank spread | tokens/s | speedup | efficiency |
 |---:|---:|---:|---:|---:|---:|---:|---:|
-| 1 | 932 s | 3.4418 s | 3.4418 s | 0.0% | 2,380 | 1.00x | 100.0% |
-| 4 | 853 s | 3.5969 s | 3.5981 s | 0.0% | 9,107 | 3.83x | 95.7% |
-| 16 | 63 s | 3.6247 s | 3.6277 s | 0.2% | 36,131 | 15.18x | 94.9% |
-| 64 | 81 s | 3.5496 s | 3.5595 s | 0.4% | 147,292 | 61.88x | 96.7% |
+| 1 | 766 s | 3.4140 s | 3.4140 s | 0.0% | 2,400 | 1.00x | 100.0% |
+| 4 | 51 s | 3.5311 s | 3.5317 s | 0.0% | 9,278 | 3.87x | 96.7% |
+| 16 | 54 s | 3.5470 s | 3.5489 s | 0.1% | 36,934 | 15.39x | 96.2% |
+| 64 | 74 s | 3.5608 s | 3.5650 s | 0.2% | 147,067 | 61.29x | 95.8% |
 
 Speedup and efficiency are against the single-core baseline, on the **slowest** rank.
 
-**61.9× on 64 logical NeuronCores, 96.7% efficiency, 147,292 tokens/s** at 8192
-context. The step time barely moves from 1 rank to 64 — 3.4418 s to 3.5595 s, a
-3.4% cost for a 64× wider batch — which is what data-parallel scaling looks like
+**61.3× on 64 logical NeuronCores, 95.8% efficiency, 147,067 tokens/s** at 8192
+context. The step time barely moves from 1 rank to 64 — 3.4140 s to 3.5650 s, a
+4.4% cost for a 64× wider batch — which is what data-parallel scaling looks like
 when the collective is small: the gradient payload is 10.3 MB in bf16 and fits in
 one bucket.
 
 Rank spread stays under 0.5% everywhere, so these are throughput numbers and not
 straggler numbers.
 
-Cold compile is a one-off per graph shape and is cached. The two large ones (932 s
-at 1 rank, 853 s at 4) are the first non-DDP and first DDP graphs; once the DDP
-graph is cached, 16 and 64 ranks start in **63 s and 81 s**. That is the whole
-argument for warming with one multi-rank job before launching a large one.
+Cold compile is a one-off per graph shape and is cached. The large one (766 s at 1
+rank) is the first graph of the eleven compiled blocks. On torch-neuronx 2.14 the
+first DDP graph is cheap — 4 ranks start in **51 s**, 16 in 54 s and 64 in 74 s —
+where the private-beta build paid a second full compile (853 s) for it. Warm with
+one rank before launching many regardless: concurrent cold compiles of the block
+graphs have been enough to kill the compile service.
 
 
 ## Single core, in detail
 
 ```
-step times (s): 931.575  140.087  3.443  3.374  3.621  3.271  3.438
-                  3.442    3.443  3.618  3.270  3.616
+step times (s): 765.614  76.019  3.281  3.414  3.414  3.414  3.414
+                  3.414   3.416  5.682  1.151  5.681
 ```
 
 Three regimes are visible and worth naming:
 
-* **step 0 — 931.6 s.** Cold compile: eleven 7B blocks at 8192, `neuronx-cc`, empty
+* **step 0 — 765.6 s.** Cold compile: eleven 7B blocks at 8192, `neuronx-cc`, empty
   NEFF cache. One-off, and cached for every subsequent process.
-* **step 1 — 140.1 s.** Still not steady state. Dynamo recompiles for the shapes and
+* **step 1 — 76.0 s.** Still not steady state. Dynamo recompiles for the shapes and
   guards the first step did not cover. This is why `--warmup-steps` defaults to 3 and
   why the warm median excludes them.
-* **steps 2+ — 3.27 to 3.62 s.** Steady state. Median **3.4418 s**, spread 10.7%
-  peak-to-peak, which is the compiled/eager boundary alternating rather than contention.
+* **steps 2–8 — 3.28 to 3.42 s.** Steady state. Median **3.4140 s**, flat to 0.1%
+  after step 2.
+* **steps 9–11 — 5.68, 1.15, 5.68 s.** Not contention: the driver's host fences.
+  Step 10 materialises the logged loss (`--log-every 10`) and step 12 the final one,
+  so device work queued behind them is charged to those steps and the step between
+  finds an empty queue. Each pair averages 3.42 s, and the median is unaffected.
 
-**2,380 tokens/s on one logical NeuronCore**, at 8192 context, with 0.23% of the
+**2,400 tokens/s on one logical NeuronCore**, at 8192 context, with 0.23% of the
 parameters training.
 
 ## Host fallbacks
@@ -89,24 +98,24 @@ both dtypes:
 
 ```
 stage             executed  fallback
-forward                 44         0
-backward                22         0
-clip_grad_norm          15         1   ['aten::_to_copy']
-optimizer.step          13         0
-eval forward            27         0
+forward                 48         0
+backward                33         0
+clip_grad_norm          15         0
+optimizer.step          11         0
+eval forward            35         0
 ```
 
-The model graph is clean. The one entry is `torch.nn.utils.clip_grad_norm_`, which
-costs a single scalar round-trip per step. Every formulation was tried —
-`foreach=True`, `foreach=False`, the default, and a hand-written clip with the
-threshold pre-placed on device — and all four are numerically identical (worst
-gradient difference 0.0, norms agreeing to 8 decimals) and all four produce it. Run
-with `--clip-grad-norm 0` for a step with nothing on the host.
+(`scripts/check_fallback_ops.py`, bf16, seq 1024; fp32 is equally clean.) Nothing
+runs on the host, and every production run above reports `fallbacks none`. Two
+things changed against the private-beta build: `clip_grad_norm_`'s scalar
+`aten::_to_copy` is gone, and RMSNorm's `norm` backward — which 2.14 sends to the
+host — is replaced by a bit-identical custom backward
+([`OPTIMIZATIONS.md`](OPTIMIZATIONS.md) §5).
 
-Note also that a *cumulative* `get_fallback_ops()` always contains `aten::_to_copy`:
-it includes the host-to-device transfer of the weights and the first batch, which is
-a copy that has to happen. The driver clears tracking after warmup so its reported
-list describes steady state.
+The driver clears tracking after warmup, so its reported list describes steady
+state rather than compilation. (On the private-beta build a *cumulative* list also
+always held an `aten::_to_copy` for the host-to-device transfer of the weights; on
+2.14 that copy is not counted as a fallback.)
 
 The raw per-rank JSON these tables come from is committed as
 [`scaling.json`](scaling.json) — `runs/` itself is gitignored, so the evidence
@@ -122,6 +131,7 @@ NEURON_RT_VISIBLE_CORES=0-63 torchrun --nproc_per_node=64 \
 python scripts/summarize_bench.py runs/bench_w1 runs/bench_w64
 ```
 
-The first DDP run at a given world size recompiles: a DDP graph carries the
-allreduce and is not the single-rank graph, so a single-rank warm-up does not cache
-it. One multi-rank warm-up does cache it for every larger world size.
+The first DDP run carries the allreduce and is a different graph from the
+single-rank one, so a single-rank warm-up does not cache it. On torch-neuronx 2.14
+that costs ~50 s rather than a second full compile, but warm the block graphs with
+one rank first all the same.

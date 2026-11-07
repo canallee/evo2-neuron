@@ -85,7 +85,12 @@ because the fused SDPA *backward* is a known Neuron failure at longer sequences.
 ### 4. flash-attn RMSNorm and Triton RoPE → plain torch (`layers.py`, `rotary.py`)
 
 Both are vortex's own fallbacks, not new math. `RMSNorm` keeps vortex's exact eps
-placement (added to the norm, **outside** the reciprocal). RoPE recomputes
+placement (added to the norm, **outside** the reciprocal). Its L2 norm runs
+through a small `autograd.Function` (`_L2Norm`): same forward call, and PyTorch's
+own backward formula with the zero mask compared against `0.0` rather than `0`.
+On torch-neuronx 2.14 the built-in backward's integer comparison is converted on
+the host — one `aten::_to_copy` fallback per RMSNorm per backward. The gradient
+is bit-identical to autograd's on CPU in fp32 and bf16. RoPE recomputes
 `inv_freq` in fp32, matching vortex, which ignores the checkpoint's bf16
 `inv_freq` buffer whenever it is not already fp32. The recompute also avoids
 `aten::pow.Scalar`, which falls back to the host on Neuron in bf16.

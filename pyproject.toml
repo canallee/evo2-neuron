@@ -10,9 +10,10 @@ readme = "README.md"
 requires-python = ">=3.10"
 license = { text = "Apache-2.0" }
 
-# torch, torch-neuronx, neuronx-cc and nki come from the AWS native-PyTorch beta
-# and are DELIBERATELY not pinned here — installing them from PyPI would shadow
-# the editable beta install. See docs/ENVIRONMENT.md.
+# torch, torch-neuronx, neuronx-cc and nki are DELIBERATELY not pinned here:
+# torch-neuronx must match the torch release exactly, comes from the Neuron pip
+# index, and on Ubuntu 24.04 is a local source build that a resolver would replace
+# with a wheel that cannot load. See docs/INSTALL.md and docs/ENVIRONMENT.md.
 dependencies = [
     "numpy>=1.26",
     "huggingface_hub>=0.23",
@@ -20,6 +21,7 @@ dependencies = [
 
 [project.optional-dependencies]
 dev = ["pytest>=8", "ruff>=0.6"]
+docs = ["playwright>=1.40"]   # scripts/build_usage_guide.py -> USAGE-GUIDE.pdf
 
 [tool.setuptools.packages.find]
 where = ["src"]

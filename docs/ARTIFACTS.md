@@ -39,6 +39,14 @@ two `cuda_*` bundles cannot be regenerated without an H200.
 `parity/01` fails with a clear message rather than a stack trace when a bundle is
 missing.
 
+**CPU and Neuron bundles are tied to the stack that wrote them.** The shipped ones
+were written by torch 2.14.0 / torch-neuronx 2.14.3 (`provenance` in each
+`manifest.json`). A CPU bundle is bit-reproducible on that torch release only —
+torch 2.12.1 writes a bf16 read-out 1.24e-02 away — so regenerate the CPU and Neuron
+bundles when you change torch, and compare like with like. Measured differences:
+[`PARITY.md`](PARITY.md#cpu-results-across-torch-releases). The CUDA bundles are
+unaffected.
+
 ~3.5 GB.
 
 | bundle | device | seq | contents |
@@ -74,9 +82,11 @@ PYTHONPATH=src python scripts/dump_artifacts.py \
 ```
 
 **`--inputs-from` and `--init-from` are effectively mandatory for anything
-cross-device.** `torch.manual_seed` feeds a *per-device* generator, so seeding
-alone gives CPU and Neuron unrelated head weights — measured rel_err 1.478, i.e.
-a comparison between two different models. Pin both and the gradients are the
+cross-device.** `torch.manual_seed` feeds a *per-device* generator, so a head
+initialised on each device from the same seed gives CPU and Neuron unrelated
+weights — measured rel_err 1.419, i.e. a comparison between two different models.
+(`dump_artifacts.py` builds on CPU and then moves, so it is not exposed; code that
+initialises on the device is.) Pin both and the gradients are the
 only free variable. `--init-from` refuses a partial pin rather than covering some
 tensors and leaving the rest random.
 

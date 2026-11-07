@@ -1,0 +1,312 @@
+<!doctype html>
+<html lang="en">
+<head>
+<meta charset="utf-8">
+<title>Evo 2 on Trainium</title>
+<!-- Source of USAGE-GUIDE.pdf. Rebuild: python scripts/build_usage_guide.py -->
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link href="https://fonts.googleapis.com/css2?family=Inter:wght@400;600;700;800&family=JetBrains+Mono:wght@400;600&family=Source+Serif+4:ital,wght@0,400;0,600;1,400&display=swap" rel="stylesheet">
+<style>
+  @page { size: A4; margin: 18mm 17mm 18mm 17mm; }
+  :root {
+    --ink: #1d2321; --muted: #5d6764; --rule: #d9dfdc; --code-bg: #f3f5f4;
+    --green: #2f6e55; --chip-bg: #eef4f1; --chip-line: #cfe0d8;
+    --warn-bg: #f7e9e2; --warn-line: #e3c1b3; --warn-ink: #b14a2c;
+  }
+  * { box-sizing: border-box; }
+  body { margin: 0; color: var(--ink); background: #fff;
+    font: 10.6pt/1.55 "Source Serif 4", "DejaVu Serif", Georgia, serif; }
+  h1, h2, h3, .kicker, th, .chip b, .label { font-family: Inter, "Liberation Sans", "DejaVu Sans", sans-serif; }
+  .kicker { font-size: 7.6pt; letter-spacing: .16em; text-transform: uppercase; color: var(--green); font-weight: 700; margin: 0 0 6pt; }
+  h1 { font-size: 26pt; font-weight: 800; letter-spacing: -.02em; margin: 0 0 10pt; }
+  .stripe { height: 3px; background: linear-gradient(90deg, #2f6e55 0 25%, #3d6fa3 25% 50%, #c2a23a 50% 75%, #b14a2c 75% 100%); margin: 0 0 16pt; }
+  h2 { font-size: 15pt; font-weight: 700; margin: 22pt 0 6pt; page-break-after: avoid; }
+  h2::after { content: ""; display: block; width: 72pt; height: 2px; margin-top: 5pt;
+    background: linear-gradient(90deg, #2f6e55 0 25%, #3d6fa3 25% 50%, #c2a23a 50% 75%, #b14a2c 75% 100%); }
+  p { margin: 0 0 8pt; }
+  code, pre, .mono { font-family: "JetBrains Mono", "DejaVu Sans Mono", monospace; }
+  code { font-size: 8.6pt; background: var(--code-bg); padding: 0 3pt; border-radius: 3px; }
+  pre { font-size: 7.9pt; line-height: 1.5; background: var(--code-bg); border-radius: 4px; padding: 8pt 10pt; margin: 6pt 0 10pt; white-space: pre-wrap; page-break-inside: avoid; }
+  pre .c { color: #7b8682; }
+  .lede { font-size: 11.4pt; max-width: 155mm; }
+  .chips { display: flex; flex-wrap: wrap; gap: 5pt; margin: 12pt 0 14pt; }
+  .chip { font: 7.6pt "JetBrains Mono", monospace; background: var(--chip-bg); border: 1px solid var(--chip-line); border-radius: 3px; padding: 4pt 7pt; color: var(--muted); }
+  .chip b { font-family: "JetBrains Mono", monospace; color: var(--ink); font-weight: 600; margin-right: 3pt; }
+  .box { border-left: 3px solid var(--warn-ink); background: var(--warn-bg); padding: 10pt 12pt 6pt; margin: 8pt 0 12pt; max-width: 150mm; page-break-inside: avoid; }
+  .box.note { border-left-color: var(--green); background: var(--chip-bg); }
+  .label { font-size: 7.2pt; letter-spacing: .14em; text-transform: uppercase; font-weight: 700; color: var(--warn-ink); margin: 0 0 5pt; }
+  .box.note .label { color: var(--green); }
+  table { width: 100%; border-collapse: collapse; margin: 6pt 0 12pt; font-size: 8.8pt; }
+  tr { page-break-inside: avoid; }
+  th { text-align: left; font-size: 6.8pt; letter-spacing: .13em; text-transform: uppercase; color: var(--muted); font-weight: 600; border-bottom: 1px solid var(--ink); padding: 4pt 6pt; }
+  td { border-bottom: 1px solid var(--rule); padding: 4pt 6pt; vertical-align: top; }
+  td.num, th.num { text-align: right; font-family: "JetBrains Mono", monospace; font-size: 8.2pt; }
+  td.pass { font-family: Inter, sans-serif; font-weight: 700; color: var(--green); font-size: 8pt; }
+  .bars { border: 1px solid var(--rule); border-radius: 4px; padding: 8pt 10pt; margin: 4pt 0 12pt; font: 7.4pt "JetBrains Mono", monospace; color: var(--muted); page-break-inside: avoid; }
+  .bar { display: flex; align-items: center; gap: 6pt; margin: 3pt 0; }
+  .bar span.r { width: 22pt; text-align: right; }
+  .bar span.b { height: 11pt; background: var(--green); border-radius: 2px; }
+  .foot { color: var(--muted); font-size: 9pt; margin-top: 18pt; border-top: 1px solid var(--rule); padding-top: 8pt; }
+  a { color: var(--ink); }
+</style>
+</head>
+<body>
+
+<p class="kicker">StripedHyena 2 · native PyTorch · AWS Trainium</p>
+<h1>Evo 2 on Trainium</h1>
+<div class="stripe"></div>
+
+<p class="lede">Arc Institute's 7B DNA language model running on <code>torch.device("neuron")</code>
+in plain PyTorch — no vortex runtime, no TransformerEngine, no flash-attn, no CUDA. The same
+package runs unchanged on CPU. Gated against saved H200 activations, with generic LoRA
+fine-tuning and a data-parallel driver for every core on the instance. Measured on AWS's
+public <code>torch-neuronx</code> 2.14 (Neuron SDK 2.33.0).</p>
+
+<div class="chips">
+  <span class="chip"><b>CUDA→CPU</b>0 diverging blocks</span>
+  <span class="chip"><b>CUDA→Trainium</b>0 diverging blocks</span>
+  <span class="chip"><b>seq 8192</b>0 diverging blocks</span>
+  <span class="chip"><b>grad + 3 steps</b>74/74 tensors</span>
+  <span class="chip"><b>host fallbacks</b>none</span>
+  <span class="chip"><b>64 cores</b>147,067 tok/s · 95.8%</span>
+</div>
+
+<div class="box">
+  <p class="label">Read this before using it for science</p>
+  <p><b>This is a re-implementation, not Arc Institute's code.</b> The model definition was
+  written against <a href="https://github.com/ArcInstitute/evo2">ArcInstitute/evo2</a> and
+  <a href="https://github.com/Zymrael/vortex">Zymrael/vortex</a> and patched to run without
+  CUDA, vortex, TransformerEngine, flash-attn or Triton. The weights are Arc's, unmodified;
+  everything around them is not. Not endorsed by, or affiliated with, Arc Institute or AWS.</p>
+  <p><b>Only <code>evo2-7b</code> is validated.</b> <code>evo2-1b</code> builds and runs, but
+  Arc's 1B config sets <code>use_fp8_input_projections: True</code> and this port has no FP8
+  path — disabling it costs ~47 accuracy points, so the 1B numbers cannot be gated against
+  anything. <code>evo2-40b</code> is not implemented.</p>
+  <p><b>It is not bit-exact against CUDA, and is not meant to be.</b> The read-out differs from
+  the H200 reference by 1.6e-02 (CPU) and 3.4e-02 (Trainium) in bf16 — consistent with
+  reduction order rather than a defect. For calibration, upgrading torch from 2.12 to 2.14,
+  which cannot change the mathematics, moves the same CPU tensor by 1.2e-02. That is small
+  for a representation and <i>not nothing for a downstream decision</i>: variant effect sizes,
+  likelihood ratios and ranked predictions can move. If a result matters, check it against
+  the CUDA path for your own task first.</p>
+  <p><b>Not validated:</b> generation and decoding, context beyond 8192, batch &gt; 1 per core,
+  and full fine-tuning at 7B scale.</p>
+</div>
+
+<h2>Install and weights</h2>
+<p>The <code>neuron</code> device comes from AWS's public native-PyTorch backend,
+<code>torch-neuronx</code> 2.14, with <code>neuronx-cc</code> and <code>nki</code> from the
+Neuron pip index. On Ubuntu 24.04 the published <code>torch-neuronx</code> wheels need glibc
+2.43 and do not load, so <code>docs/INSTALL.md</code> builds it from the public source, after
+upgrading the DLAMI's Neuron runtime to 2.35. Nothing below the device line needs any of it —
+the tests, the examples and the CUDA parity gate all run on a plain CPU install.</p>
+<pre><span class="c"># the Neuron env from docs/INSTALL.md, then this package's deps</span>
+conda activate torch-neuron-evo2
+pip install -r requirements.txt
+export PYTHONPATH=$PWD/src
+
+<span class="c"># works with no device and no weights: 102 unit tests, ~25 s</span>
+make test
+make smoke      <span class="c"># every example on CPU, random weights</span></pre>
+<p>Weights are Arc's and are not redistributed. They download on first use. A read-out head
+only needs blocks 0..10, so pruning the checkpoint once cuts it from 13 GB to 4.5 GB — worth
+doing before a multi-rank job, where every rank reads it.</p>
+<pre>huggingface-cli download arcinstitute/evo2_7b_base evo2_7b_base.pt
+python scripts/prune_checkpoint.py evo2_7b_base.pt evo2_7b_blocks0_10.pt --max-blocks 11
+export EVO2_CHECKPOINT=$PWD/evo2_7b_blocks0_10.pt</pre>
+
+<h2>Embeddings in six lines</h2>
+<pre>import evo2_finetune.neuron_env as env; env.configure()   <span class="c"># BEFORE torch</span>
+import torch
+from evo2_finetune.backbone import Evo2Backbone
+from evo2_neuron import ByteTokenizer
+
+backbone = Evo2Backbone("evo2-7b").to(env.resolve_device("neuron"))
+ids, mask = ByteTokenizer().encode_batch(["ACGTACGTACGT"], max_length=8192)
+hidden = backbone(ids.to("neuron"))          <span class="c"># (1, 8192, 4096)</span></pre>
+<div class="box note">
+  <p class="label">Order matters</p>
+  <p><code>configure()</code> must run before anything imports torch. <code>import torch</code>
+  auto-loads <code>torch_neuronx</code>, which reads the four compiler cache directories at that
+  moment; setting them afterwards has no effect and the run silently uses <code>/tmp</code>. It
+  raises rather than letting you find out later.</p>
+</div>
+
+<h2>Parity gates</h2>
+<p>The reference is an NVIDIA H200 running evo2 0.1.0 / vortex 0.0.2, bit-reproducible across
+two physical GPUs. Its activations ship in the box, so the gates are runnable rather than
+quotable.</p>
+<table>
+  <tr><th>Axis</th><th>What it proves</th><th class="num">hidden0</th><th>Result</th></tr>
+  <tr><td>CUDA → CPU, seq 200</td><td>the port reproduces vortex + TransformerEngine</td><td class="num">1.59e-02</td><td class="pass">PASS</td></tr>
+  <tr><td>CUDA → Trainium, seq 200</td><td>end to end, reference to device</td><td class="num">3.41e-02</td><td class="pass">PASS</td></tr>
+  <tr><td>CUDA → CPU, seq 8192</td><td>the production context</td><td class="num">1.98e-02</td><td class="pass">PASS</td></tr>
+  <tr><td>CPU ↔ Trainium, forward fp32</td><td>the device lowering is faithful</td><td class="num">8.26e-05</td><td class="pass">PASS</td></tr>
+  <tr><td>CPU ↔ Trainium, backward</td><td>gradients agree, 74 tensors</td><td class="num">—</td><td class="pass">0 real</td></tr>
+  <tr><td>CPU ↔ Trainium, 3 AdamW steps</td><td>on-device training agrees</td><td class="num">~6e-08</td><td class="pass">0 real</td></tr>
+</table>
+<pre>make health     <span class="c"># no orphaned process is holding a core</span>
+make parity-cpu <span class="c"># the CUDA axis only — no device needed</span>
+make parity     <span class="c"># all three gates, CPU and Neuron</span>
+make fallbacks  <span class="c"># per-stage, per-dtype host-fallback census</span></pre>
+<p><b>The gate is the residual stream, not the read-out.</b> <code>hidden0</code> is a 0.42%
+correction to the residual stream by norm: it reports that something diverged and never where.
+And the metric on the stream is the increment <code>delta_k = block_out.k − block_out.{k−1}</code>,
+not the cumulative tensor — block 3 contributes 1.3% of <code>block_out.3</code>, so a completely
+broken attention block reads ~1.3e-02 cumulatively, inside the bf16 noise floor.</p>
+<p>A block is flagged only if it fails both magnitude (<code>relerr &gt; 3e-3</code>) and direction
+(<code>1−cos &gt; 1e-2</code>). Both floors are calibrated against controls, not chosen.</p>
+<div class="box note">
+  <p class="label">Why magnitude alone says little at bf16</p>
+  <p>The CPU read-out from torch 2.12.1 and from torch 2.14.0 — same port, same checkpoint, same
+  input, each bit-reproducible on its own — differs by 1.24e-02. On torch 2.12.1, flipping
+  <code>requires_grad</code> on the backbone moved it by the same 1.244e-02. The entire CUDA→CPU
+  disagreement is 1.59e-02. At this precision the magnitude is mostly reduction order; direction
+  is the half that discriminates.</p>
+</div>
+
+<h2>LoRA fine-tuning</h2>
+<p>The backbone is frozen; only the adapters and the read-out head train — 74 tensors, 5.2 M of
+2.23 B parameters at r=8. Six objectives over four heads, chosen by the granularity of the label
+you have.</p>
+<table>
+  <tr><th>Objective</th><th>Head</th><th>Label</th><th>Output</th></tr>
+  <tr><td><code>next-token-ce</code></td><td>tied LM head</td><td>none — the sequence itself</td><td class="mono">(B, L, 512)</td></tr>
+  <tr><td><code>sequence-regression</code></td><td>MLPReadoutHead · ConvReadoutHead</td><td>one float vector per sequence</td><td class="mono">(B, out)</td></tr>
+  <tr><td><code>sequence-classification</code></td><td>MLPReadoutHead · ConvReadoutHead</td><td>one class per sequence</td><td class="mono">(B, out)</td></tr>
+  <tr><td><code>window-regression</code></td><td>WindowTrackHead</td><td>one value per 256 bp bin</td><td class="mono">(B, L/256, out)</td></tr>
+  <tr><td><code>per-position-classification</code></td><td>PerPositionHead</td><td>one class per nucleotide</td><td class="mono">(B, L, out)</td></tr>
+  <tr><td><code>per-position-regression</code></td><td>PerPositionHead</td><td>one value per nucleotide</td><td class="mono">(B, L, out)</td></tr>
+</table>
+<pre>from evo2_finetune import build_model
+
+model = build_model(
+    objective="window-regression",      <span class="c"># one prediction per 256 bp bin</span>
+    alias="evo2-7b", out_dim=1, device="neuron", dtype=torch.bfloat16,
+    head_kwargs={"window": 256}, gradient_checkpointing=True,
+)
+out = model(input_ids=ids, attention_mask=mask, labels=y, weights=w)
+out["loss"].backward()</pre>
+<p>Four runnable examples ship with the repo. Each runs on CPU in seconds with
+<code>--random-backbone</code>, and on Trainium with real weights.</p>
+<pre>python examples/01_embeddings.py --device cpu --random-backbone --max-blocks 3
+python examples/02_lora_lm_finetune.py --fasta genome.fa --device neuron
+python examples/03_window_regression.py --device neuron
+python examples/04_per_nucleotide_classification.py --device neuron</pre>
+<p>Labelled data is optional: <code>SyntheticDNADataset</code> plants motifs in seeded random
+sequence and derives sequence, window and per-base labels from them, so every example runs
+offline. The signal is learnable on purpose — a flat loss curve there means the harness is wrong,
+not that the task is hard.</p>
+
+<h2>Training across every NeuronCore</h2>
+<p>Warm the compiler cache with one rank first — concurrent cold compiles have been enough to
+kill the compile service. The cold compile of eleven 7B blocks at 8192 is a one-off
+766 s; every warm step after it is 3.41 s.</p>
+<pre><span class="c"># warm the NEFF cache, one rank</span>
+NEURON_RT_VISIBLE_CORES=0 python -u scripts/train_lora_ddp.py --steps 12
+
+<span class="c"># then all 64 logical cores of a trn2.48xlarge</span>
+NEURON_RT_VISIBLE_CORES=0-63 torchrun --nproc_per_node=64 \
+    scripts/train_lora_ddp.py --objective window-regression --seq-len 8192 \
+    --steps 200 --save-to runs/lora64 --diag-dir runs/lora64/diag</pre>
+<table>
+  <tr><th class="num">Ranks</th><th class="num">Cold compile</th><th class="num">Warm step</th><th class="num">Tokens/s</th><th class="num">Speedup</th><th class="num">Efficiency</th></tr>
+  <tr><td class="num">1</td><td class="num">766 s</td><td class="num">3.414 s</td><td class="num">2,400</td><td class="num">1.00×</td><td class="num">100.0%</td></tr>
+  <tr><td class="num">4</td><td class="num">51 s</td><td class="num">3.532 s</td><td class="num">9,278</td><td class="num">3.87×</td><td class="num">96.7%</td></tr>
+  <tr><td class="num">16</td><td class="num">54 s</td><td class="num">3.549 s</td><td class="num">36,934</td><td class="num">15.39×</td><td class="num">96.2%</td></tr>
+  <tr><td class="num">64</td><td class="num">74 s</td><td class="num">3.565 s</td><td class="num">147,067</td><td class="num">61.29×</td><td class="num">95.8%</td></tr>
+</table>
+<div class="bars">
+  <div class="bar"><span class="r">1</span><span class="b" style="width:1.4%"></span><span>2,400</span></div>
+  <div class="bar"><span class="r">4</span><span class="b" style="width:5.4%"></span><span>9,278</span></div>
+  <div class="bar"><span class="r">16</span><span class="b" style="width:21.3%"></span><span>36,934</span></div>
+  <div class="bar"><span class="r">64</span><span class="b" style="width:85.0%"></span><span>147,067</span></div>
+</div>
+<p><b>61.3× on 64 logical NeuronCores at 95.8% efficiency</b>, 147,067 tokens/s at 8192 context. The step time moves 4.4% from one rank to sixty-four — 3.4140 s to 3.5650 s for a 64× wider batch — which is what data-parallel scaling looks like when the collective is small: the gradient payload is 10.3 MB in bf16 and fits in one bucket. Rank spread stays under 0.5% throughout, so these are throughput numbers and not straggler numbers. Only the first graph is a long compile; on torch-neuronx 2.14 the first DDP graph costs about 50 s.</p>
+<p>Defaults are the production configuration: bf16, per-block compile, activation checkpointing,
+<code>nki-scan</code>, batch 1 per rank.</p>
+
+<h2>What makes it run, and what makes it fast</h2>
+<p>Three of the four production flags are not optional at seq 8192: without <code>nki-scan</code>
+the long convolution does not compile, without checkpointing the step does not fit in 24 GiB,
+and without per-block compile the graph exceeds the compiler's instruction limit. The figures in
+the last column were measured on the private-beta build this port was developed on.</p>
+<table>
+  <tr><th>Lever</th><th>What it does</th><th>Worth</th></tr>
+  <tr><td><code>--hcl-kernel nki-scan</code></td><td>The Hyena modal long convolution h[s]=Σⱼrⱼaⱼˢ is the transfer function of a first-order recurrence, so it becomes a scan. C·L² → C·S·L: 512× fewer MACs at 8192.</td><td>the only form that compiles at 8192</td></tr>
+  <tr><td><code>--compile-blocks</code></td><td>The whole-model graph is 13.57 M instructions against a 5 M cap (<code>NCC_EBVF030</code>). The cap is per graph, so compile eleven.</td><td>1.72× on the 8192 step</td></tr>
+  <tr><td><code>--gradient-checkpointing</code></td><td>Recompute 10 of 11 blocks. <code>use_reentrant=False</code> is mandatory — the reentrant path silently drops every LoRA gradient but the topmost.</td><td>makes 8192 fit; +3.0%, bit-identical</td></tr>
+  <tr><td><code>--readout-block 10</code></td><td>Build 11 of 32 blocks. The same cut applied to the checkpoint file is 13 GB → 4.46 GB.</td><td>two thirds of the weights skipped</td></tr>
+  <tr><td>op rewrites</td><td><code>argmax</code> → cumsum/clamp/sum; <code>logaddexp</code> → max-shift; a window-spanning <code>Conv1d</code> → one <code>addmm</code>; RoPE <code>pow.Scalar</code> fixed in source; RMSNorm's <code>norm</code> backward with a float zero.</td><td><code>get_fallback_ops()</code> empty</td></tr>
+  <tr><td>fp32 depthwise conv in a bf16 model</td><td>Pinned deliberately: <code>F.conv1d</code> at groups=4096, k=128 is 11–27× slower in bf16 than fp32.</td><td>measured, not cautionary</td></tr>
+</table>
+<p>Those rewrites fix ops that fall back silently — the run completes with correct numbers and a
+host round-trip per step. That is why the census is a tool (<code>scripts/check_fallback_ops.py</code>)
+and not an eyeball: it clears tracking between stages, asserts the executed-op list is non-empty,
+and runs both dtypes, because the fallback set is dtype-dependent.</p>
+
+<h2>Artifact bundles</h2>
+<p>A bundle is one directory of tensors that pins everything a device port can get wrong. Dump one
+per device, then diff them.</p>
+<table>
+  <tr><th>File</th><th>Contents</th><th>Catches</th></tr>
+  <tr><td><code>inputs.pt</code></td><td>the exact batches, replayed</td><td>a comparison run on the wrong input</td></tr>
+  <tr><td><code>blocks0_10.pt</code></td><td>the residual stream, per block</td><td>where the port diverges</td></tr>
+  <tr><td><code>hidden0.pt</code></td><td>the read-out the head consumes</td><td>that it diverged</td></tr>
+  <tr><td><code>w0.pt</code></td><td>trainable weights before step 0</td><td>the two arms started differently</td></tr>
+  <tr><td><code>g1.pt</code></td><td>gradients after the first backward</td><td>a wrong backward</td></tr>
+  <tr><td><code>wN.pt</code></td><td>weights after N steps</td><td>a wrong optimizer step</td></tr>
+</table>
+<p><code>hidden0</code> and <code>blocks0_10</code> are captured on the first forward, where
+<code>lora_B</code> is still zero and the adapters are exactly the identity. They are pure backbone
+activations — which is what lets a CUDA bundle produced by one task gate a port trained on another.
+CPU bundles are bit-reproducible on the torch release that wrote them; the shipped ones were written
+by torch 2.14.0.</p>
+<pre>PYTHONPATH=src python scripts/dump_artifacts.py --device neuron --dtype bf16 \
+    --inputs-from artifacts/cuda_seq200/inputs.pt --forward-only \
+    --strict-determinism --out-dir artifacts/my_run
+PYTHONPATH=src python scripts/dump_artifacts.py --compare \
+    artifacts/cuda_seq200 artifacts/my_run</pre>
+<div class="box note">
+  <p class="label">Pin the weights, do not seed them</p>
+  <p><code>torch.manual_seed</code> feeds a per-device generator, so a head initialised on each
+  device from the same seed gives CPU and Neuron unrelated weights — measured rel_err 1.419, a
+  comparison between two different models. <code>--init-from</code> refuses a partial pin rather
+  than covering some tensors and leaving the rest random.</p>
+</div>
+
+<h2>Things that fail without saying so</h2>
+<p>Each of these produces a run that completes and is wrong, or a job that is N× slower with no
+error. All are handled in the shipped code; they are here because you will meet them the moment
+you step outside it.</p>
+<table>
+  <tr><th>If you…</th><th>What happens</th></tr>
+  <tr><td>install the published <code>torch-neuronx</code> wheel on Ubuntu 24.04</td><td>it installs cleanly, then <code>import torch_neuronx</code> fails: <code>GLIBC_2.43 not found</code>. Build from source (<code>docs/INSTALL.md</code>).</td></tr>
+  <tr><td>set the <code>TORCH_NEURONX_*</code> cache dirs after importing torch</td><td>no effect; the run uses <code>/tmp</code>, and a permission error there surfaces as a generic "Compilation error"</td></tr>
+  <tr><td>leave <code>NEURON_RT_VISIBLE_CORES=0</code> under torchrun</td><td>every rank would share one core — correct numbers, N× slower, no error. The driver refuses instead, naming the rank and the range.</td></tr>
+  <tr><td>leave the full range visible to every rank</td><td>each runtime claims all of it — <code>Failed to initialize Neuron Runtime: status code 1</code> on all but one rank, naming neither cause nor culprit</td></tr>
+  <tr><td>address the device by local rank after narrowing</td><td><code>Device index 0 is out of range. Valid range is 3 to 3</code> — the visible set is narrowed, not renumbered</td></tr>
+  <tr><td>use <code>blocks[i] = torch.compile(...)</code></td><td><code>_orig_mod.</code> is inserted into 60 of 74 parameter names, breaking adapter checkpoints</td></tr>
+  <tr><td>leave <code>recompile_limit</code> at its default of 8</td><td>eleven blocks exceed it and dynamo falls back to eager, silently</td></tr>
+  <tr><td>read out via a forward hook on a compiled block</td><td>dynamo traces through the submodule and the hook never fires; <code>compile_blocks()</code> switches the read-out mode for you</td></tr>
+  <tr><td>use reentrant activation checkpointing</td><td>a frozen backbone means block inputs do not require grad; every LoRA gradient but the topmost is dropped</td></tr>
+  <tr><td>skip <code>convert_wqkv_column_split</code> at load</td><td>q/k/v scrambled across heads, no error, read-out off by rel_err ~1.37</td></tr>
+  <tr><td>judge a gradient by magnitude alone</td><td><code>lora_B</code> is zero-init, so an absent gradient reads as a small one</td></tr>
+  <tr><td>pipe a long device run through <code>tail</code></td><td>it buffers until exit; a healthy compile looks hung</td></tr>
+</table>
+<p>The last one has a corollary worth internalising: before believing any timing number, run
+<code>make health</code>. An orphaned process holding a NeuronCore fakes a mid-run throughput
+collapse, and a bimodal step-time trace is a contention signature until proven otherwise.</p>
+
+<p class="foot">Apache-2.0. The model definition is re-implemented from
+<a href="https://github.com/ArcInstitute/evo2">ArcInstitute/evo2</a> and
+<a href="https://github.com/Zymrael/vortex">Zymrael/vortex</a>, both Apache-2.0 — see
+<code>src/evo2_neuron/VENDORED.md</code> for source commits and the full patch list. Weights are Arc
+Institute's and are not redistributed. Numbers on this page were measured on a trn2.48xlarge with
+torch 2.14.0 and <code>torch-neuronx</code> 2.14.3 (Neuron SDK 2.33.0, built from the public source)
+unless marked otherwise, and are reproducible with the commands shown; the exact environment is in
+<code>docs/ENVIRONMENT.md</code>. CPU results reproduce bit for bit only on the same torch release.</p>
+
+</body>
+</html>

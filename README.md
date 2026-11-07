@@ -32,10 +32,10 @@ downloaded from HuggingFace at first use.
 > and should not be trusted. `evo2-40b` is not implemented.
 >
 > **It is not bit-exact against CUDA, and it is not meant to be.** The read-out
-> differs from the H200 reference by **1.5e-02 (CPU)** and **3.5e-02 (Trainium)**
+> differs from the H200 reference by **1.6e-02 (CPU)** and **3.4e-02 (Trainium)**
 > in bf16 — real, measured, and consistent with reduction-order differences rather
-> than a defect. For calibration: flipping `requires_grad` on the backbone, which
-> cannot change the mathematics, moves the same tensor by 1.2e-02. See
+> than a defect. For calibration: upgrading torch from 2.12 to 2.14, which cannot
+> change the mathematics, moves the same CPU tensor by 1.2e-02. See
 > [`docs/PARITY.md`](docs/PARITY.md) for the method and the controls.
 >
 > That is small for a representation and it is **not nothing for a downstream
@@ -52,15 +52,20 @@ downloaded from HuggingFace at first use.
 
 | | evo2-7b |
 |---|---|
-| forward, CPU vs the H200 reference | **PASS** — no block diverges, `hidden0` 1.48e-02 |
-| forward, Trainium vs the H200 reference | **PASS** — no block diverges, `hidden0` 3.53e-02 |
+| forward, CPU vs the H200 reference | **PASS** — no block diverges, `hidden0` 1.59e-02 |
+| forward, Trainium vs the H200 reference | **PASS** — no block diverges, `hidden0` 3.41e-02 |
 | forward at seq 8192 vs the H200 reference | **PASS** — see [`docs/PARITY.md`](docs/PARITY.md) |
 | backward + 3 AdamW steps, CPU vs Trainium | **PASS** — 74/74 tensors, 0 real disagreements |
 | `torch_neuronx.get_fallback_ops()` | **empty** for forward, backward, `optimizer.step` and eval |
-| LoRA fine-tune, seq 8192, one NeuronCore | **3.44 s/step** warm, 2,380 tok/s |
-| the same across all 64 NeuronCores | **147,292 tok/s** — 61.9x, **96.7%** efficiency |
+| LoRA fine-tune, seq 8192, one NeuronCore | **3.41 s/step** warm, 2,400 tok/s |
+| the same across all 64 NeuronCores | **147,067 tok/s** — 61.3x, **95.8%** efficiency |
 
 Numbers, method and the CPU↔Neuron tables: [`docs/PARITY.md`](docs/PARITY.md).
+Measured on torch 2.14.0 / torch-neuronx 2.14.3 — the exact environment is in
+[`docs/ENVIRONMENT.md`](docs/ENVIRONMENT.md#the-measured-environment-exactly).
+CPU results are bit-reproducible only within one torch release: torch 2.12.1 → 2.14.0
+moves the CPU bf16 read-out by 1.24e-02 with no code change
+([`docs/PARITY.md`](docs/PARITY.md#cpu-results-across-torch-releases)).
 What makes it run and what makes it fast: [`docs/OPTIMIZATIONS.md`](docs/OPTIMIZATIONS.md).
 Measured step times and scaling: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
@@ -68,12 +73,12 @@ Measured step times and scaling: [`docs/PERFORMANCE.md`](docs/PERFORMANCE.md).
 
 ## Install
 
-The `neuron` device comes from AWS's native-PyTorch stack, which is not a
-`pip install` — you assemble a conda environment from artifacts AWS gives you.
-**[`docs/INSTALL.md`](docs/INSTALL.md) is the assembly recipe**, including the
-four steps that fail without naming their cause. It does not cover obtaining the
-artifacts: at the time of writing that stack is a pre-release AWS offering, so
-**contact the AWS Neuron team for access.**
+The `neuron` device comes from AWS's public native-PyTorch backend,
+[`torch-neuronx`](https://github.com/aws-neuron/torch-neuronx) 2.14 (Neuron SDK
+2.33.0). **[`docs/INSTALL.md`](docs/INSTALL.md) is the recipe**: a Neuron runtime
+upgrade, a conda environment, and — on Ubuntu 24.04, where the published wheels
+need glibc 2.43 — a source build of `torch-neuronx`, with the steps that fail
+without naming their cause.
 
 Nothing below the device line needs any of it — `make test` and `make smoke` pass
 on a plain CPU install, and the CUDA parity gate runs without a device.
@@ -87,7 +92,7 @@ export PYTHONPATH=$PWD/src
 Check it works, with no device and no weights:
 
 ```bash
-make test                            # 100 unit tests, ~20 s
+make test                            # 102 unit tests, ~25 s
 make smoke                           # every example on CPU, random weights
 ```
 

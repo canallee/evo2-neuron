@@ -32,9 +32,10 @@ Files, and what each one catches:
 
 **`--init-from` and `--inputs-from` are effectively mandatory for any
 cross-device comparison.** `torch.manual_seed` feeds a *per-device* generator, so
-seeding alone gives CPU and Neuron unrelated head weights — measured rel_err
-1.478, i.e. a comparison of two different models. Pin both and the gradients are
-the only free variable.
+a head initialised on each device from the same seed gives CPU and Neuron unrelated
+weights — measured rel_err 1.419, i.e. a comparison of two different models. This
+script builds on CPU and then moves, so it is not exposed; pin both anyway, and the
+gradients are the only free variable.
 
 Gate the stream first. On evo2-7b the read-out is a 0.42% correction to the
 residual stream by norm, so `hidden0` reports *that* something diverged and never

@@ -1,5 +1,5 @@
-# Everything here assumes the AWS native-PyTorch beta env is active and
-# PYTHONPATH=src. See docs/ENVIRONMENT.md.
+# Everything here assumes the torch-neuronx (native PyTorch) env is active and
+# PYTHONPATH=src. See docs/INSTALL.md and docs/ENVIRONMENT.md.
 export PYTHONPATH := src
 
 CORES ?= 0
