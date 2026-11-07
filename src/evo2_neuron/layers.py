@@ -15,6 +15,29 @@ import torch.nn.functional as F
 from torch import Tensor, nn
 
 
+class _L2Norm(torch.autograd.Function):
+    """`x.norm(2, dim=-1, keepdim=True)` with PyTorch's own backward, minus a host fallback.
+
+    The forward is the same call, so activations are bit-identical. The backward is
+    PyTorch's `grad * (x / norm).masked_fill_(norm == 0, 0)` with one change: the
+    zero is a float. The built-in formula compares against an integer 0, and on
+    torch-neuronx 2.14 that scalar is converted on the host -- one `aten::_to_copy`
+    fallback per RMSNorm per backward. The gradient is bit-identical on CPU
+    (`tests/test_ops.py::TestRMSNormBackward`).
+    """
+
+    @staticmethod
+    def forward(ctx, x: Tensor) -> Tensor:
+        norm = x.norm(2, dim=-1, keepdim=True)
+        ctx.save_for_backward(x, norm)
+        return norm
+
+    @staticmethod
+    def backward(ctx, grad: Tensor) -> Tensor:
+        x, norm = ctx.saved_tensors
+        return grad * (x / norm).masked_fill_(norm == 0.0, 0.0)
+
+
 class RMSNorm(nn.Module):
     """vortex `layers.RMSNorm`.
 
@@ -30,7 +53,7 @@ class RMSNorm(nn.Module):
         self.scale = nn.Parameter(torch.ones(self.hidden_size))
 
     def forward(self, x: Tensor) -> Tensor:
-        y = x / (x.norm(2, dim=-1, keepdim=True) * self.hidden_size ** (-1.0 / 2) + self.eps)
+        y = x / (_L2Norm.apply(x) * self.hidden_size ** (-1.0 / 2) + self.eps)
         return self.scale * y
 
 

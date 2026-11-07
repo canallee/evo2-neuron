@@ -10,8 +10,9 @@ is stricter in three ways, each of which matters:
 * **With a positive control.** `get_executed_ops()` must be **non-empty**. An
   empty fallback list is also what a stage that executed nothing returns, so
   without this the gate passes vacuously.
-* **Per dtype.** The fallback set is dtype-dependent — bf16's forward executes 53
-  distinct ops against fp32's 50 — so a green fp32 run says nothing about bf16.
+* **Per dtype.** The fallback set is dtype-dependent — on torch-neuronx 2.14,
+  bf16's forward executes 48 distinct ops against fp32's 50 — so a green fp32 run
+  says nothing about bf16.
 
     NEURON_RT_VISIBLE_CORES=0 PYTHONPATH=src python -u scripts/check_fallback_ops.py
 """
@@ -117,16 +118,9 @@ def run(args, dtype_name: str) -> int:
     failures = 0
 
     for name, executed, fallback in rows:
-        # `clip_grad_norm_` costs one `aten::_to_copy` per step on this stack and
-        # no formulation tried avoids it (foreach True/False/None, and a
-        # hand-written device-resident clip, all produce it; all are numerically
-        # identical). It is a scalar round-trip, it is reported, and it is not
-        # counted against the gate — the gate is about the model graph.
-        if name == "clip_grad_norm" and fallback == ["aten::_to_copy"]:
-            print(f"{name:<16}{executed:>10}{len(fallback):>10}  "
-                  "['aten::_to_copy'] — known, scalar round-trip, not gated")
-            continue
-
+        # No stage is exempt. The earlier private-beta build sent one scalar
+        # `aten::_to_copy` in `clip_grad_norm_` to the host and this gate waived
+        # it; torch-neuronx 2.14 runs the clip on the device, so it is gated too.
         print(f"{name:<16}{executed:>10}{len(fallback):>10}"
               f"{('  ' + str(fallback)) if fallback else ''}")
 

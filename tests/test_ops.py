@@ -180,3 +180,34 @@ class TestNKIScanRouting:
         whole = modal_causal_conv_chunked(x, log_poles, residues, length, length)
 
         torch.testing.assert_close(chunked, whole, rtol=1e-4, atol=1e-5)
+
+
+class TestRMSNormBackward:
+    """`_L2Norm` against `x.norm(2, -1, keepdim=True)` under autograd, bit for bit.
+
+    The rewrite exists only to keep the backward on the device: the built-in
+    backward compares the norm against an integer zero, which torch-neuronx 2.14
+    converts on the host. Same forward call, PyTorch's own backward formula, so
+    anything short of exact equality means the formula was transcribed wrongly.
+    """
+
+    @pytest.mark.parametrize("dtype", [torch.float32, torch.bfloat16])
+    def test_forward_and_gradient_are_bit_identical(self, dtype):
+        from evo2_neuron.layers import _L2Norm
+
+        torch.manual_seed(0)
+        x = torch.randn(5, 4096, dtype=dtype)
+        x[2] = 0  # the masked branch: a zero row has a zero norm
+        grad = torch.randn(5, 1, dtype=dtype)
+
+        ref_x = x.clone().requires_grad_(True)
+        ref = ref_x.norm(2, dim=-1, keepdim=True)
+        ref.backward(grad)
+
+        new_x = x.clone().requires_grad_(True)
+        new = _L2Norm.apply(new_x)
+        new.backward(grad)
+
+        assert torch.equal(new, ref)
+        assert torch.equal(new_x.grad, ref_x.grad)
+        assert torch.equal(new_x.grad[2], torch.zeros_like(new_x.grad[2]))
